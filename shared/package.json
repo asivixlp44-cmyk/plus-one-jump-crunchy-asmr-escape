@@ -1,0 +1,5 @@
+{
+  "name": "jce-shared",
+  "private": true,
+  "type": "module"
+}

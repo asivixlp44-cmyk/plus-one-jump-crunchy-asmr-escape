@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>+1 Jump Crunchy ASMR Escape</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%91%9F%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap">
+<style>
+:root {
+    color-scheme: dark;
+    --ink: #16121f;
+    --panel: #2c2a5a;
+    --panel-2: #3b3874;
+    --yellow: #ffd028;
+    --green: #46ec50;
+    --blue: #28c8ff;
+    --red: #e82434;
+    --white: #ffffff;
+    --font: "Fredoka", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+    font-size: clamp(9px, calc(100vmin / 56), 16px);
+}
+[hidden] { display: none !important; }
+html, body { height: 100%; margin: 0; overflow: hidden; background: #7fd0ff; }
+body { font-family: var(--font); color: var(--white); user-select: none; -webkit-user-select: none; touch-action: none; }
+#app { position: fixed; inset: 0; }
+#view { position: absolute; inset: 0; width: 100%; height: 100%; display: block; outline: none; }
+button { font-family: var(--font); cursor: pointer; color: var(--white); }
+button:focus-visible { outline: 3px solid var(--yellow); outline-offset: 2px; }
+
+.o { text-shadow: -2px -2px 0 var(--ink), 2px -2px 0 var(--ink), -2px 2px 0 var(--ink), 2px 2px 0 var(--ink), 0 2px 0 var(--ink), 0 -2px 0 var(--ink), 2px 0 0 var(--ink), -2px 0 0 var(--ink); }
+.o1 { text-shadow: -1px -1px 0 var(--ink), 1px -1px 0 var(--ink), -1px 1px 0 var(--ink), 1px 1px 0 var(--ink), 0 1.5px 0 var(--ink); }
+[data-icon] { display: inline-block; font-style: normal; line-height: 0; }
+[data-icon] svg { width: 100%; height: 100%; overflow: visible; }
+
+.btn {
+    border: 3px solid var(--ink); border-radius: 0.8rem; font-weight: 700;
+    box-shadow: inset 0 -0.3rem 0 rgba(0, 0, 0, 0.22), 0 0.2rem 0 var(--ink);
+    transition: transform 0.18s cubic-bezier(0.34, 1.8, 0.5, 1), filter 0.15s ease;
+}
+.btn:hover:not(:disabled) { transform: translateY(-2px) scale(1.05); filter: brightness(1.08); }
+.btn:active:not(:disabled) { transform: translateY(2px) scale(0.94); transition-duration: 0.06s; }
+.g-yellow { background: linear-gradient(#ffe36b, #ffb51c); }
+.g-green { background: linear-gradient(#7dff6b, #22c73a); }
+.g-blue { background: linear-gradient(#6fe0ff, #1f8fff); }
+.g-red { background: linear-gradient(#ff6b6b, #d8182c); }
+.g-purple { background: linear-gradient(#e27bff, #8a1cff); }
+.g-pink { background: linear-gradient(#ff8fd0, #ff3fa0); }
+.g-grey { background: linear-gradient(#a79fbf, #6b6386); }
+
+/* HUD ------------------------------------------------------------------ */
+#hud { position: absolute; inset: 0; pointer-events: none; }
+#hud > * { pointer-events: auto; }
+#hud .passive { pointer-events: none; }
+
+/* Top centre: Skip Wall, level-up text, the tutorial/quest line (top-left is Bloxity's) */
+#top { position: absolute; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 0.8rem); transform: translateX(-50%); display: grid; justify-items: center; gap: 0.4rem; width: min(46rem, 74vw); pointer-events: none; }
+#top > * { pointer-events: auto; }
+#skipWall { display: flex; align-items: center; gap: 0.5rem; font-size: 1.5rem; padding: 0.25rem 1rem 0.25rem 0.4rem; background: linear-gradient(#b07bff, #7a2cf0); border-radius: 0.7rem; }
+#skipWall .sk { font-size: 0.85rem; font-weight: 700; font-style: italic; background: linear-gradient(#6fe0ff, #1f6bff); border: 2px solid var(--ink); border-radius: 50%; width: 2.3rem; height: 2.3rem; display: grid; place-items: center; }
+#lvlUpTxt { display: grid; justify-items: center; line-height: 1.05; opacity: 0; }
+#lvlUpTxt b { font-size: 1.7rem; color: #9dff7a; }
+#lvlUpTxt span { font-size: 1.45rem; color: #ffe14a; }
+#lvlUpTxt.show { animation: lvlTxt 3s ease forwards; }
+@keyframes lvlTxt { 0% { opacity: 0; transform: scale(0.6); } 10% { opacity: 1; transform: scale(1.12); } 18% { transform: scale(1); } 85% { opacity: 1; } 100% { opacity: 0; } }
+#topText { font-size: 1.9rem; font-weight: 700; text-align: center; line-height: 1.1; }
+#topText small { display: block; font-size: 1.05rem; color: #ffe14a; }
+#pills { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; }
+.hpill { display: flex; align-items: center; gap: 0.35rem; padding: 0.15rem 0.8rem 0.15rem 0.4rem; border: 3px solid var(--ink); border-radius: 0.7rem; font-size: 1.05rem; font-weight: 700; white-space: nowrap; box-shadow: 0 0.15rem 0 var(--ink); }
+.hpill i { width: 1.5rem; height: 1.5rem; }
+#rushPill { background: linear-gradient(#7dff6b, #22a83a); animation: pulse 1s ease-in-out infinite alternate; }
+#boostPill { background: linear-gradient(#ff8fd0, #c428ff); }
+@keyframes pulse { to { filter: brightness(1.25); transform: scale(1.05); } }
+#notice { position: absolute; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 11.5rem); transform: translateX(-50%); padding: 0.35rem 1.4rem; background: rgba(42, 38, 92, 0.92); border: 3px solid #ff5a5a; border-radius: 0.6rem; white-space: nowrap; font-size: 1.3rem; font-weight: 700; }
+
+/* Left column: Wins, then the 2-wide button grid */
+#leftCol { position: absolute; left: max(0.8rem, env(safe-area-inset-left, 0px)); top: 24vh; display: grid; gap: 0.35rem; width: 10.4rem; }
+#winsBox { display: flex; align-items: center; gap: 0.35rem; }
+#winsBox i { width: 3.6rem; height: 3.6rem; position: relative; }
+#winsBox .plus { position: absolute; right: -0.3rem; top: -0.5rem; font-size: 1.6rem; color: #46ec50; font-style: normal; line-height: 1; }
+#winsBox b { font-size: 2.2rem; font-variant-numeric: tabular-nums; }
+.tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 0.35rem; }
+.tile { position: relative; height: 4.7rem; padding: 0.2rem 0 0.15rem; display: grid; justify-items: center; align-content: center; gap: 0.05rem; border-radius: 0.8rem; }
+.tile i { width: 2.6rem; height: 2.6rem; transition: transform 0.25s cubic-bezier(0.34, 1.8, 0.5, 1); }
+.tile:hover i { transform: rotate(-10deg) scale(1.15); }
+.tile span { font-size: 0.9rem; font-weight: 700; }
+.tile.sm { height: 3.5rem; }
+.tile.sm i { width: 1.8rem; height: 1.8rem; }
+.tile.sm span { font-size: 0.75rem; }
+.t-red { background: linear-gradient(#ff7a8a, #e8283c); }
+.t-purple { background: linear-gradient(#c79bff, #7a3cf0); }
+.t-gold { background: linear-gradient(#ffe36b, #ff9a1e); }
+.t-white { background: linear-gradient(#ffffff, #b8c4e0); }
+.t-violet { background: linear-gradient(#d68aff, #9a2cd8); }
+.t-brown { background: linear-gradient(#e8a050, #a8521e); }
+.t-orange { background: linear-gradient(#ffc070, #ff7a1e); }
+.t-blue { background: linear-gradient(#8fd8ff, #2f8bff); }
+.t-pink { background: linear-gradient(#ff9ad8, #e8409a); }
+.t-grey { background: linear-gradient(#c4c8d8, #7a80a0); }
+.badge { position: absolute; top: -0.45rem; left: -0.45rem; min-width: 1.4rem; height: 1.4rem; display: grid; place-items: center; background: var(--red); border: 2px solid var(--ink); border-radius: 1rem; font-size: 0.8rem; padding: 0 0.3rem; font-weight: 700; }
+
+/* Right column: Shop (flash sale), x2 Jump pass, Custom Jump */
+#rightCol { position: absolute; right: max(0.8rem, env(safe-area-inset-right, 0px)); top: 26vh; display: grid; gap: 0.5rem; justify-items: stretch; width: 9.6rem; }
+#btnShop { position: relative; font-size: 2rem; padding: 0.3rem 0.4rem; border-radius: 0.9rem; background: linear-gradient(90deg, #ff3a3a, #ff9a1e, #ffe14a, #46ec50, #28c8ff, #8a5cff); }
+#btnShop .flash { position: absolute; top: -1.05rem; left: 50%; transform: translateX(-50%); font-size: 0.85rem; color: #ff4a5a; white-space: nowrap; }
+#btnShop .bang { position: absolute; left: -0.6rem; top: -0.6rem; width: 1.5rem; height: 1.5rem; border-radius: 50%; background: var(--red); border: 2px solid var(--ink); font-size: 0.9rem; display: grid; place-items: center; }
+#btnX2 { display: grid; justify-items: center; line-height: 1; padding: 0.35rem 0.3rem; background: linear-gradient(#ff8fd0, #e8409a); border-radius: 0.9rem; }
+#btnX2 .nm { font-size: 1.5rem; }
+#btnX2 .pr { font-size: 1.1rem; display: flex; align-items: center; gap: 0.2rem; }
+#btnX2.owned { background: linear-gradient(#7dff6b, #22c73a); }
+#custom { display: grid; justify-items: center; gap: 0.1rem; background: linear-gradient(#d8dce8, #8a90a8); border: 3px solid var(--ink); border-radius: 0.9rem; padding: 0.3rem 0.4rem; box-shadow: 0 0.2rem 0 var(--ink); }
+#custom label { font-size: 0.8rem; font-weight: 700; }
+#customIn { width: 5.4rem; text-align: center; font: 700 1.4rem var(--font); color: #7dff6b; background: rgba(22,18,31,0.25); border: 2px solid rgba(22,18,31,0.4); border-radius: 0.5rem; padding: 0.05rem; -moz-appearance: textfield; }
+#customIn::-webkit-outer-spin-button, #customIn::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+#customMax { font-size: 0.85rem; font-weight: 700; }
+
+/* Bottom centre: Jump count, multipliers, the level bar and the Jump products */
+#bottom { position: absolute; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 0.6rem); transform: translateX(-50%); display: grid; justify-items: center; gap: 0.2rem; width: min(40rem, 76vw); }
+#multRow { position: relative; width: 100%; height: 2.6rem; }
+#jumpCount { position: absolute; left: 50%; bottom: 0.1rem; transform: translateX(-50%); font-size: 1.9rem; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.mult { position: absolute; font-size: 0.85rem; font-weight: 700; white-space: nowrap; }
+#multPass { left: 0; bottom: 0; color: #c46bff; }
+#multAura { right: 3.6rem; bottom: 1.1rem; color: #6fe0ff; }
+#multReb { right: 3.6rem; bottom: 0; color: #ff5a5a; }
+#lvlRow { display: flex; align-items: center; gap: 0.5rem; width: 100%; }
+#lvlBar { position: relative; flex: 1; height: 2.6rem; background: #232046; border: 3px solid var(--ink); border-radius: 0.4rem; overflow: hidden; box-shadow: 0 0.2rem 0 rgba(22,18,31,0.6); }
+#lvlFill { position: absolute; inset: 0 auto 0 0; width: 0%; background: linear-gradient(#8fd8ff, #3fa0ff 60%, #2f7bff); transition: width 0.18s linear; }
+#lvlName { position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); font-size: 1.5rem; font-weight: 700; }
+#lvlXp { position: absolute; right: 0.9rem; top: 50%; transform: translateY(-50%); font-size: 1.5rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+#starBtn { position: relative; width: 3.2rem; height: 3.2rem; padding: 0; border-radius: 0.8rem; background: linear-gradient(#ffe36b, #ff9a1e); display: grid; place-items: center; }
+#starBtn i { width: 2.4rem; height: 2.4rem; }
+#starBtn small { position: absolute; right: -0.2rem; bottom: -0.45rem; font-size: 0.85rem; }
+#prodRow { display: flex; gap: 0.45rem; justify-content: center; flex-wrap: wrap; }
+.prod { display: flex; align-items: center; gap: 0.25rem; font-size: 1rem; padding: 0.2rem 0.6rem 0.2rem 0.35rem; border-radius: 0.6rem; }
+.prod i { width: 1.3rem; height: 1.3rem; }
+.p1 { background: linear-gradient(#ff6b6b, #d8182c); }
+.p2 { background: linear-gradient(#ffc070, #ff7a1e); }
+.p3 { background: linear-gradient(#ffe36b, #c8a01c); }
+.p4 { background: linear-gradient(#9dff7a, #2fae36); }
+#friendBoost { position: absolute; left: max(0.8rem, env(safe-area-inset-left, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 0.8rem); display: flex; align-items: center; gap: 0.35rem; font-size: 1.1rem; font-weight: 700; }
+#friendBoost i { width: 1.8rem; height: 1.8rem; }
+#friendBoost b { color: #7dff6b; }
+
+#topRight { position: absolute; right: max(1rem, env(safe-area-inset-right, 0px)); top: calc(env(safe-area-inset-top, 0px) + 0.8rem); display: flex; align-items: center; gap: 0.5rem; }
+#acct { display: flex; align-items: center; gap: 0.5rem; background: rgba(22, 18, 31, 0.6); border: 2px solid rgba(255, 255, 255, 0.25); border-radius: 2rem; padding: 0.2rem 0.3rem; max-width: 40vw; }
+#acctPfp { width: 2.2rem; height: 2.2rem; border-radius: 50%; object-fit: cover; background: #2b2442; }
+#acctName { font-size: 1.05rem; font-weight: 700; max-width: 11rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-left: 0.3rem; }
+#acctBtn { font-size: 0.85rem; padding: 0.25rem 0.7rem; border-radius: 1rem; }
+#fps { position: absolute; right: max(1rem, env(safe-area-inset-right, 0px)); top: calc(env(safe-area-inset-top, 0px) + 4.2rem); font-size: 0.9rem; font-weight: 700; color: #7dff6b; font-variant-numeric: tabular-nums; }
+
+#gains { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.gain { position: absolute; display: flex; align-items: center; gap: 0.15rem; font-size: 1.5rem; font-weight: 700; color: #ffffff; animation: gainUp 0.9s ease-out forwards; white-space: nowrap; }
+.gain i { width: 1.6rem; height: 1.6rem; }
+.gain.big { font-size: 2.1rem; color: #ffe14a; }
+.gain.op { font-size: 2.5rem; color: #ff4a5a; }
+@keyframes gainUp { 0% { opacity: 0; transform: translateY(0.4rem) scale(0.6); } 15% { opacity: 1; transform: scale(1.1); } 100% { opacity: 0; transform: translateY(-2.6rem) scale(0.9); } }
+
+#toasts { position: absolute; left: 50%; top: 34%; transform: translateX(-50%); display: grid; justify-items: center; gap: 0.3rem; pointer-events: none; }
+.toast { font-size: 1.45rem; font-weight: 700; white-space: nowrap; animation: toast 2.4s cubic-bezier(0.2, 1.4, 0.4, 1) forwards; }
+@keyframes toast { 0% { opacity: 0; transform: translateY(1rem) scale(0.7); } 10% { opacity: 1; transform: none; } 80% { opacity: 1; } 100% { opacity: 0; transform: translateY(-0.8rem); } }
+
+#bigText { position: absolute; left: 50%; top: 44%; transform: translate(-50%, -50%); font-size: clamp(2.6rem, 9vw, 5rem); font-weight: 700; white-space: nowrap; pointer-events: none; opacity: 0; }
+#bigText.show { animation: big 2s cubic-bezier(0.2, 1.5, 0.4, 1) forwards; }
+@keyframes big { 0% { opacity: 0; transform: translate(-50%, -50%) scale(2.2) rotate(-6deg); } 15% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -80%) scale(0.9); } }
+
+#winTop { position: absolute; left: 50%; top: 26%; transform: translateX(-50%); font-size: 3rem; font-weight: 700; color: #7dff6b; white-space: nowrap; opacity: 0; pointer-events: none; }
+#winTop.show { animation: winTop 2.6s ease forwards; }
+@keyframes winTop { 0% { opacity: 0; transform: translate(-50%, 0.8rem) scale(0.6); } 12% { opacity: 1; transform: translate(-50%, 0) scale(1.15); } 20% { transform: translate(-50%, 0) scale(1); } 80% { opacity: 1; } 100% { opacity: 0; } }
+
+#flash { position: absolute; inset: 0; pointer-events: none; opacity: 0; background: radial-gradient(circle at 50% 55%, rgba(125, 255, 107, 0.4), rgba(125, 255, 107, 0) 60%); }
+#flash.show { animation: flash 0.7s ease-out; }
+#flash.gold { background: radial-gradient(circle at 50% 50%, rgba(255, 208, 40, 0.5), rgba(255, 208, 40, 0) 65%); }
+@keyframes flash { 0% { opacity: 1; } 100% { opacity: 0; } }
+
+#promptBtn { position: absolute; transform: translate(-50%, -100%); display: flex; align-items: center; gap: 0.5rem; background: rgba(22, 18, 31, 0.8); border: 2px solid rgba(255, 255, 255, 0.5); border-radius: 0.8rem; padding: 0.35rem 0.8rem 0.35rem 0.4rem; font-size: 1.1rem; font-weight: 600; white-space: nowrap; }
+#promptBtn kbd { font: 700 1rem var(--font); background: var(--white); color: var(--ink); border-radius: 0.4rem; padding: 0.1rem 0.5rem; text-shadow: none; }
+
+/* Hatch: the box shakes, pops, and the pet card comes out */
+#hatch { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(12, 8, 40, 0.5); pointer-events: auto; }
+#hatchBox { font-size: 8rem; line-height: 1; animation: shakeBox 0.25s ease-in-out infinite alternate; }
+@keyframes shakeBox { from { transform: rotate(-12deg) scale(1); } to { transform: rotate(12deg) scale(1.08); } }
+#hatchCard { display: grid; justify-items: center; gap: 0.3rem; padding: 1rem 2rem 1.1rem; background: var(--panel); border: 4px solid var(--ink); border-radius: 1.2rem; box-shadow: 0 0.4rem 0 var(--ink), 0 0 3rem rgba(255, 255, 255, 0.35); animation: popIn 0.45s cubic-bezier(0.2, 1.6, 0.4, 1); }
+#hatchCard .pi { font-size: 6rem; line-height: 1.1; }
+#hatchCard .pn { font-size: 2rem; font-weight: 700; }
+#hatchCard .pr { font-size: 1.2rem; font-weight: 700; }
+#hatchCard .pb { font-size: 1.3rem; font-weight: 700; color: #7dff6b; }
+
+/* Touch controls */
+#touch { position: absolute; inset: 0; pointer-events: none; }
+#stick { position: absolute; left: max(1.5rem, env(safe-area-inset-left, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 5rem); width: 9rem; height: 9rem; border-radius: 50%; background: rgba(255, 255, 255, 0.15); border: 3px solid rgba(255, 255, 255, 0.4); pointer-events: auto; touch-action: none; }
+#knob { position: absolute; left: 50%; top: 50%; width: 3.8rem; height: 3.8rem; margin: -1.9rem 0 0 -1.9rem; border-radius: 50%; background: rgba(255, 255, 255, 0.6); border: 3px solid rgba(22, 18, 31, 0.6); }
+#jumpBtn { position: absolute; right: max(1.5rem, env(safe-area-inset-right, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 6rem); width: 7rem; height: 7rem; border-radius: 50%; pointer-events: auto; touch-action: none; font-size: 1.5rem; display: grid; place-items: center; padding: 0; }
+#jumpBtn i { width: 3.2rem; height: 3.2rem; }
+#tips { position: absolute; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 11rem); transform: translateX(-50%); display: flex; flex-wrap: wrap; justify-content: center; gap: 0.35rem 1rem; max-width: min(40rem, 92vw); font-size: 1rem; font-weight: 600; color: #efe8ff; background: rgba(22, 18, 31, 0.55); border-radius: 1rem; padding: 0.45rem 0.9rem; pointer-events: none; transition: opacity 0.8s ease; }
+body.touch #stick { left: calc(max(0.8rem, env(safe-area-inset-left, 0px)) + 10rem); bottom: calc(env(safe-area-inset-bottom, 0px) + 3rem); }
+#tips kbd { font: 700 0.85rem var(--font); background: var(--white); color: var(--ink); border-radius: 0.35rem; padding: 0.05rem 0.4rem; margin-right: 0.25rem; text-shadow: none; }
+
+@media (max-width: 760px), (max-height: 520px) {
+    #top { width: min(30rem, 58vw); top: calc(env(safe-area-inset-top, 0px) + 0.5rem); gap: 0.25rem; }
+    #topText { font-size: 1.3rem; }
+    #leftCol { width: 8.4rem; top: 18vh; }
+    .tile { height: 3.7rem; }
+    .tile i { width: 1.9rem; height: 1.9rem; }
+    .tile span { font-size: 0.72rem; }
+    .tile.sm { height: 2.9rem; }
+    #rightCol { width: 7.8rem; top: 20vh; }
+    #btnShop { font-size: 1.5rem; }
+    #btnX2 .nm { font-size: 1.15rem; }
+    #bottom { width: min(30rem, 62vw); }
+    #lvlName, #lvlXp { font-size: 1.15rem; }
+    #jumpCount { font-size: 1.4rem; }
+    .prod { font-size: 0.8rem; }
+    #notice { top: calc(env(safe-area-inset-top, 0px) + 8rem); font-size: 1rem; }
+    #acctName { display: none; }
+}
+
+/* Bux coin */
+.bx { display: inline-block; width: 1em; height: 1em; margin-right: 0.18em; vertical-align: -0.12em; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff6b0 0 18%, #ffd23a 40%, #e79a0c 100%); box-shadow: inset 0 0 0 0.09em #b86f00, 0 0.06em 0 rgba(0, 0, 0, 0.35); position: relative; font-style: normal; flex: none; }
+.bx::after { content: "B"; position: absolute; inset: 0; display: grid; place-items: center; font: 700 0.62em/1 var(--font); color: #9a5a00; text-shadow: none; }
+
+/* Panels ----------------------------------------------------------------- */
+.overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(12, 8, 40, 0.45); padding: 1rem; }
+.overlay:not([hidden]) { animation: fadeIn 0.2s ease; }
+.overlay:not([hidden]) .panel { animation: popIn 0.34s cubic-bezier(0.2, 1.5, 0.4, 1); }
+@keyframes fadeIn { from { opacity: 0; } }
+@keyframes popIn { from { opacity: 0; scale: 0.8; } }
+.panel { position: relative; width: min(36rem, 100%); max-height: min(38rem, 90vh); display: flex; flex-direction: column; background: var(--panel); border: 4px solid var(--ink); border-radius: 1.3rem; box-shadow: 0 0.4rem 0 var(--ink); overflow: visible; }
+.panel header { position: relative; display: flex; align-items: center; justify-content: center; padding: 0.9rem 3.4rem 0.4rem; }
+.panel h2 { margin: -2rem 0 0; font-size: 1.9rem; font-weight: 700; background: linear-gradient(#ff8fd0, #e8409a); border: 3px solid var(--ink); border-radius: 0.7rem; padding: 0.1rem 1.6rem; box-shadow: 0 0.2rem 0 var(--ink); white-space: nowrap; }
+.panel .x { position: absolute; right: -0.7rem; top: -0.9rem; width: 2.8rem; height: 2.8rem; font-size: 1.3rem; padding: 0; }
+.panel .body { padding: 0.6rem 0.9rem 0.9rem; overflow-y: auto; display: grid; gap: 0.6rem; border-radius: 0 0 1.1rem 1.1rem; }
+.row-card { display: grid; grid-template-columns: 3rem 1fr auto; align-items: center; gap: 0.7rem; background: var(--panel-2); border: 3px solid var(--ink); border-radius: 0.9rem; padding: 0.5rem 0.6rem; }
+.row-card .ic { font-size: 2rem; text-align: center; line-height: 1; }
+.row-card .nm { font-size: 1.2rem; font-weight: 700; line-height: 1.1; }
+.row-card .ds { font-size: 0.9rem; color: #cfd0f8; }
+.row-card .btns { display: flex; gap: 0.35rem; }
+.row-card button { font-size: 1rem; padding: 0.4rem 0.7rem; min-width: 5.6rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; }
+.row-card button i[data-icon] { width: 1.2em; height: 1.2em; }
+.row-card button:disabled { filter: grayscale(0.8) brightness(0.8); cursor: default; }
+.row-card.on { box-shadow: 0 0 0 3px #7dff6b; }
+.sec { font-size: 1.05rem; font-weight: 700; color: var(--yellow); letter-spacing: 0.04em; text-transform: uppercase; margin-top: 0.2rem; }
+.desc { margin: 0; text-align: center; font-size: 1rem; color: #d9d6ff; }
+
+/* Shop cards (trails / auras / win shop) like the reference's TRAILS SHOP */
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(8.6rem, 1fr)); gap: 0.55rem; }
+.card { display: grid; justify-items: center; gap: 0.2rem; background: linear-gradient(#ffffff, #dfe4f4); color: var(--ink); border: 3px solid var(--ink); border-radius: 0.8rem; padding: 0.35rem 0.3rem 0.4rem; position: relative; }
+.card .rar { font-size: 0.75rem; font-weight: 700; }
+.card .art { font-size: 2.8rem; line-height: 1.1; }
+.card .nm { font-size: 1rem; font-weight: 700; color: #fff; }
+.card .mx { font-size: 1.05rem; font-weight: 700; color: #ffffff; }
+.card .btn { width: 100%; font-size: 0.9rem; padding: 0.2rem 0.2rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; }
+.card .btn i[data-icon] { width: 1.2em; height: 1.2em; }
+.card.on { box-shadow: 0 0 0 3px #7dff6b; }
+.card.eq::after { content: "✔"; position: absolute; top: 0.2rem; right: 0.4rem; color: #22c73a; font-weight: 700; font-size: 1.2rem; }
+
+.rebirth-box { display: grid; gap: 0.7rem; text-align: center; }
+.rebirth-box .big { font-size: 2.4rem; font-weight: 700; }
+.rebirth-box .mult { display: flex; justify-content: center; align-items: center; gap: 1rem; font-size: 1.8rem; font-weight: 700; }
+.rebirth-box p { margin: 0; font-size: 1rem; color: #d9d6ff; }
+.rebirth-box button { font-size: 1.5rem; padding: 0.6rem; }
+.code-row { display: flex; gap: 0.5rem; }
+.code-row input { flex: 1; min-width: 0; font: 700 1.2rem var(--font); text-transform: uppercase; border: 3px solid var(--ink); border-radius: 0.6rem; padding: 0.4rem 0.6rem; background: #f4f0ff; color: var(--ink); }
+.code-row .btn { font-size: 1.15rem; padding: 0.35rem 1rem; }
+.quest-row { display: grid; grid-template-columns: 2rem 1fr auto; gap: 0.6rem; align-items: center; background: var(--panel-2); border: 3px solid var(--ink); border-radius: 0.8rem; padding: 0.45rem 0.6rem; font-weight: 700; }
+.quest-row.done { filter: grayscale(0.6) brightness(0.8); }
+.quest-row.cur { box-shadow: 0 0 0 3px #ffd028; }
+.quest-row small { color: #ffd028; font-size: 0.85rem; white-space: nowrap; }
+.qbar { grid-column: 2 / 4; height: 0.6rem; border-radius: 1rem; background: rgba(255,255,255,0.12); overflow: hidden; }
+.qbar div { height: 100%; background: linear-gradient(90deg, #7dff6b, #22c73a); }
+.petgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(6.4rem, 1fr)); gap: 0.45rem; }
+.pet { position: relative; display: grid; justify-items: center; gap: 0.05rem; background: var(--panel-2); border: 3px solid var(--ink); border-radius: 0.8rem; padding: 0.3rem 0.2rem; cursor: pointer; }
+.pet .pi { font-size: 2.2rem; line-height: 1.1; }
+.pet .pn { font-size: 0.78rem; font-weight: 700; text-align: center; line-height: 1.05; }
+.pet .pb { font-size: 0.8rem; font-weight: 700; color: #7dff6b; }
+.pet .cnt { position: absolute; left: 0.25rem; top: 0.1rem; font-size: 0.75rem; font-weight: 700; color: #ffe14a; }
+.pet.eq { box-shadow: 0 0 0 3px #7dff6b; }
+.pet .del { position: absolute; right: -0.4rem; top: -0.5rem; width: 1.5rem; height: 1.5rem; padding: 0; font-size: 0.75rem; border-radius: 50%; }
+.pet-acts { display: flex; gap: 0.5rem; justify-content: center; }
+.pet-acts .btn { font-size: 1.05rem; padding: 0.35rem 1rem; }
+
+#buy .panel { width: min(24rem, 100%); }
+.buy-body { display: grid; gap: 0.8rem; justify-items: center; text-align: center; padding: 1.2rem 1rem 1rem; }
+.buy-body .item { font-size: 1.6rem; font-weight: 700; }
+.buy-body .cost { font-size: 1.3rem; font-weight: 700; color: #7dff6b; }
+.buy-body .note { font-size: 0.9rem; color: #cfd0f8; margin: 0; }
+.buy-body .acts { display: flex; gap: 0.7rem; width: 100%; }
+.buy-body .acts button { flex: 1; font-size: 1.25rem; padding: 0.55rem; }
+.settings { display: grid; gap: 1rem; }
+.set-row { display: grid; grid-template-columns: 9rem 1fr; align-items: center; gap: 0.8rem; font-size: 1.15rem; font-weight: 700; }
+.set-row input[type=range] { width: 100%; accent-color: var(--green); height: 1.4rem; }
+.seg { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.seg .btn { font-size: 1rem; padding: 0.35rem 0.8rem; }
+.set-note { margin: 0; font-size: 0.9rem; color: #cfd0f8; }
+.invite-row { display: flex; gap: 0.5rem; }
+.invite-row input { flex: 1; min-width: 0; font: 600 0.9rem var(--font); border: 2px solid var(--ink); border-radius: 0.5rem; padding: 0.35rem 0.5rem; background: #f4f0ff; color: var(--ink); }
+.invite-row .btn { font-size: 0.95rem; padding: 0.35rem 0.8rem; }
+@media (max-width: 480px) { .set-row { grid-template-columns: 1fr; } }
+.row-card button:focus-visible, .seg .btn:focus-visible, .set-row input:focus-visible, .rebirth-box button:focus-visible, .card .btn:focus-visible { outline: 4px solid var(--yellow); outline-offset: 3px; }
+
+.bump-me.bump { animation: bump 0.45s cubic-bezier(0.34, 1.8, 0.5, 1); }
+@keyframes bump { 0% { transform: scale(1); } 35% { transform: scale(1.2); } 100% { transform: scale(1); } }
+
+/* Daily Rewards: six small days and a big Day 7, like the reference */
+.daily { display: grid; gap: 0.5rem; }
+.daily .grid { display: grid; grid-template-columns: repeat(3, 1fr) 1.3fr; grid-template-rows: auto auto; gap: 0.4rem; }
+.daily .day { position: relative; display: grid; justify-items: center; gap: 0.05rem; background: linear-gradient(#ffffff, #dfe4f4); color: var(--ink); border: 3px solid var(--ink); border-radius: 0.7rem; padding: 0.3rem 0.1rem; }
+.daily .day b { font-size: 0.85rem; color: #fff; }
+.daily .day .di { font-size: 1.9rem; line-height: 1.1; }
+.daily .day small { font-size: 0.8rem; font-weight: 700; white-space: nowrap; color: #fff; }
+.daily .day.big { grid-column: 4; grid-row: 1 / 3; background: linear-gradient(135deg, #ff5a5a, #ffd028, #46ec50, #28c8ff, #c46bff); }
+.daily .day.big .di { font-size: 3.4rem; }
+.daily .day.done { filter: grayscale(0.7) brightness(0.75); }
+.daily .day.done i { position: absolute; inset: 0; display: grid; place-items: center; font-size: 1.8rem; color: #7dff6b; font-style: normal; }
+.daily .day.today { box-shadow: 0 0 0 3px #7dff6b; }
+.daily > .btn { font-size: 1.2rem; padding: 0.45rem; }
+
+.tp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+.tp-grid .btn { font-size: 1.15rem; padding: 0.6rem 0.4rem; display: flex; align-items: center; justify-content: center; gap: 0.4rem; }
+
+/* Start / loading ---------------------------------------------------------- */
+#start { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 1rem; background: radial-gradient(ellipse at center, rgba(40, 120, 220, 0.35), rgba(20, 40, 110, 0.8)); }
+#loading { font-size: 1.3rem; font-weight: 700; }
+.loader { display: grid; justify-items: center; gap: 0.9rem; text-align: center; }
+.loader-ic { font-size: 4rem; animation: hop 0.6s cubic-bezier(0.3, 0, 0.7, 1) infinite alternate; }
+.loader-title { font-size: 2.8rem; font-weight: 700; color: #ffe14a; line-height: 1.05; }
+.loader-title small { display: block; font-size: 1.6rem; color: #ff8fd0; }
+@keyframes hop { to { transform: translateY(-1.4rem); } }
+#playBtn { font-size: 1.4rem; padding: 0.45rem 1.6rem; }
+.err { color: #ffb0b0; font-size: 1.05rem; font-weight: 600; max-width: 28rem; }
+#speedLines { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+#reconnecting { position: absolute; left: 50%; top: 45%; transform: translateX(-50%); display: flex; align-items: center; gap: 0.5rem; background: rgba(22, 18, 31, 0.8); border: 2px solid #ffb51c; border-radius: 2rem; padding: 0.3rem 1rem; font-weight: 700; color: #ffd028; }
+#reconnecting .spin { width: 1rem; height: 1rem; border: 3px solid #ffd028; border-top-color: transparent; border-radius: 50%; animation: spinr 0.8s linear infinite; }
+@keyframes spinr { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+    .toast, #bigText.show, .gain, #winTop.show, #lvlUpTxt.show { animation-duration: 0.01s; animation-delay: 0s; }
+    .loader-ic, #rushPill, #hatchBox { animation: none !important; }
+    .btn, .tile i { transition: none; }
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+    <canvas id="view" tabindex="0" aria-label="Game view"></canvas>
+    <canvas id="speedLines" aria-hidden="true"></canvas>
+
+    <div id="hud" hidden>
+        <div id="gains" class="passive" aria-hidden="true"></div>
+
+        <div id="top">
+            <button class="btn o" id="skipWall" hidden><span class="sk o1">SKIP</span>Skip Wall</button>
+            <div id="lvlUpTxt" class="passive o"><b id="lvlUpA">Level Up! (1 -&gt; 2)</b><span id="lvlUpB">Jump Height: 20</span></div>
+            <div id="topText" class="o passive">Walk on the crunchy floor to earn Jumps!</div>
+            <div id="pills" class="passive">
+                <div id="rushPill" class="hpill" hidden><i data-icon="star"></i><span class="o1" id="rushTxt">CRUNCH RUSH x2</span></div>
+                <div id="boostPill" class="hpill" hidden><i data-icon="shoe"></i><span class="o1" id="boostTxt"></span></div>
+            </div>
+        </div>
+        <div id="notice" class="passive o1" hidden></div>
+        <div id="winTop" class="o passive"></div>
+
+        <div id="topRight">
+            <div id="acct" hidden>
+                <img id="acctPfp" alt="" hidden>
+                <span class="o1" id="acctName">Guest</span>
+                <button class="btn g-blue o1" id="acctBtn">Log in</button>
+            </div>
+        </div>
+        <div id="fps" class="o1 passive" hidden>60 FPS</div>
+
+        <div id="leftCol">
+            <div id="winsBox" class="bump-me passive"><i data-icon="trophy"><em class="plus o1">+</em></i><b class="o" id="winsVal">0</b></div>
+            <div class="tiles">
+                <button class="btn tile t-red" data-open="rebirth"><i data-icon="rebirth"></i><span class="o1">Rebirth</span><span class="badge" id="rebBadge" hidden>!</span></button>
+                <button class="btn tile t-purple" data-open="auras"><i data-icon="aura"></i><span class="o1">Auras</span></button>
+                <button class="btn tile t-gold" data-open="free"><i data-icon="gift"></i><span class="o1">Free!</span><span class="badge" id="giftBadge" hidden>0</span></button>
+                <button class="btn tile t-white" data-open="pets"><i data-icon="paw"></i><span class="o1">Pets</span></button>
+                <button class="btn tile t-violet" data-open="teleport"><i data-icon="portal"></i><span class="o1">Teleport</span></button>
+                <button class="btn tile t-brown" data-open="inventory"><i data-icon="bag"></i><span class="o1">Inventory</span></button>
+                <button class="btn tile sm t-orange" data-open="daily"><i data-icon="calendar"></i><span class="o1">Daily</span><span class="badge" id="dailyBadge" hidden>1</span></button>
+                <button class="btn tile sm t-blue" data-open="quests"><i data-icon="scroll"></i><span class="o1">Quests</span></button>
+                <button class="btn tile sm t-pink" data-open="codes"><i data-icon="ticket"></i><span class="o1">Codes</span></button>
+                <button class="btn tile sm t-grey" data-open="settings"><i data-icon="gear"></i><span class="o1">Settings</span></button>
+            </div>
+        </div>
+
+        <div id="rightCol">
+            <button class="btn o" id="btnShop"><span class="flash o1">FLASH SALE</span><span class="bang o1">!</span>Shop</button>
+            <button class="btn" id="btnX2" data-pass="DoubleJump"><span class="nm o">x2 Jump!</span><span class="pr o1">Only <span class="pv"></span></span></button>
+            <div id="custom">
+                <label class="o1" for="customIn">Custom Jump</label>
+                <input id="customIn" type="number" min="1" step="1" inputmode="numeric" aria-label="Custom jump height">
+                <span class="o1" id="customMax">Max: 15</span>
+            </div>
+        </div>
+
+        <div id="bottom">
+            <div id="multRow" class="passive">
+                <span class="mult o1" id="multPass">Multiplier: 1x (Gamepass)</span>
+                <span id="jumpCount" class="o bump-me">0 Jump</span>
+                <span class="mult o1" id="multAura">Multiplier: 1x (Aura)</span>
+                <span class="mult o1" id="multReb">Multiplier: 1x (Rebirth)</span>
+            </div>
+            <div id="lvlRow">
+                <div id="lvlBar" class="passive"><div id="lvlFill"></div><span id="lvlName" class="o">Level 1</span><span id="lvlXp" class="o">0 / 85</span></div>
+                <button class="btn" id="starBtn" data-open="quests" aria-label="Quests"><i data-icon="star"></i><small class="o1">+1</small></button>
+            </div>
+            <div id="prodRow">
+                <button class="btn prod p1 o1" data-product="Jump100K"><i data-icon="shoe"></i>+100K Jump</button>
+                <button class="btn prod p2 o1" data-product="Jump1M"><i data-icon="shoe"></i>+1M Jump</button>
+                <button class="btn prod p3 o1" data-product="Jump10M"><i data-icon="shoe"></i>+10M Jump</button>
+                <button class="btn prod p4 o1" data-product="Jump100M"><i data-icon="shoe"></i>+100M Jump</button>
+            </div>
+        </div>
+        <div id="friendBoost" class="o1"><i data-icon="friends"></i>Friend Boost <b id="friendVal">+0%</b></div>
+
+        <div id="tips" class="o1" hidden></div>
+        <div id="flash" class="passive" aria-hidden="true"></div>
+        <div id="bigText" class="o" aria-live="polite"></div>
+        <div id="reconnecting" class="o1" hidden><span class="spin"></span>Reconnecting…</div>
+        <div id="toasts" aria-live="polite"></div>
+        <button id="promptBtn" hidden><kbd>E</kbd><span id="promptTxt"></span></button>
+
+        <div id="touch" hidden>
+            <div id="stick"><div id="knob"></div></div>
+            <button class="btn g-green o1" id="jumpBtn" aria-label="Jump"><i data-icon="up"></i></button>
+        </div>
+    </div>
+
+    <div id="hatch" hidden>
+        <div id="hatchBox" aria-hidden="true">📦</div>
+        <div id="hatchCard" hidden><div class="pi" id="hatchIc">🐱</div><div class="pn o" id="hatchName">Choco Cat</div><div class="pr o1" id="hatchRar">Common</div><div class="pb o1" id="hatchBoost">+0.1x Jumps</div></div>
+    </div>
+
+    <div id="modal" class="overlay" hidden>
+        <div class="panel" role="dialog" aria-labelledby="modalTitle">
+            <header><h2 class="o" id="modalTitle">Shop</h2><button class="btn g-red x o1" id="modalClose" aria-label="Close">✕</button></header>
+            <div class="body" id="modalBody"></div>
+        </div>
+    </div>
+
+    <div id="buy" class="overlay" hidden>
+        <div class="panel" role="dialog" aria-labelledby="buyTitle">
+            <header><h2 class="o" id="buyTitle">Buy with Bux</h2></header>
+            <div class="buy-body">
+                <div class="item o1" id="buyItem">x2 Jump</div>
+                <div class="cost o1" id="buyCost"><i class="bx" aria-hidden="true"></i>5 Bux</div>
+                <p class="note">Paid with Bux, the Bloxity currency. Free while this demo runs without a Bux catalog.</p>
+                <div class="acts"><button class="btn g-green o1" id="buyOk">Buy</button><button class="btn g-grey o1" id="buyCancel">Cancel</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="offlinePop" class="overlay" hidden>
+        <div class="panel" role="dialog" aria-labelledby="offTitle">
+            <header><h2 class="o" id="offTitle" style="background:linear-gradient(#7dff6b,#22c73a)">Earn Jumps Offline!</h2></header>
+            <div class="buy-body">
+                <div class="item o1" id="offAmount">+0 Jump</div>
+                <p class="note" id="offNote">While you were away</p>
+                <div class="acts"><button class="btn g-green o1" id="offOk">Collect!</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="offline" class="overlay" hidden>
+        <div class="panel" role="alertdialog" aria-labelledby="offlineTitle">
+            <header><h2 class="o" id="offlineTitle" style="background:linear-gradient(#ff6b6b,#d8182c)">Disconnected</h2></header>
+            <div class="buy-body">
+                <div class="item o1">Lost connection to the server</div>
+                <p class="note">Your progress is saved on the server. Rejoin to keep playing.</p>
+                <div class="acts"><button class="btn g-green o1" id="reconnectBtn">Rejoin</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="start">
+        <div class="loader">
+            <div class="loader-ic" aria-hidden="true">👟</div>
+            <div class="loader-title o">+1 JUMP<small>CRUNCHY ASMR ESCAPE!</small></div>
+            <div id="loading" class="o1">Loading…</div>
+            <div class="err o1" id="connectErr" hidden></div>
+            <button class="btn g-green o" id="playBtn" hidden>Try again</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://sdk.bloxity.io/v1/legion-sdk.min.js"></script>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
