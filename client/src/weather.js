@@ -4,30 +4,31 @@ import { groundMat, seaMat } from './world.js';
 import { sfx, setAmbience } from './audio.js';
 import { SEASONS, seasonAt, WORLD, clamp } from '../../shared/config.js';
 
-// Seasons and sky. Every look value is blended between the current season and the next,
+// Seasons and sky, lit like Bloxity's top games (summer: hemisphere 1.1, ambient 0.45, sun 1.5,
+// no tone mapping; the other seasons dimmer or warmer from there). Every look value is blended between the current season and the next,
 // so a change rolls in over SEASON_BLEND seconds: the sky darkens before the rain, leaves
 // turn orange, then snow settles on the island. Climbing very high fades the sky into space.
 
 const C = (h) => new T.Color(h);
 const LOOK = {
     summer: {
-        top: C(0x2f8cff), horizon: C(0xbfe8ff), fog: C(0xc4eaff), hemiSky: C(0xeaf6ff), hemiGround: C(0x5c8a4a), hemiI: 1.5, ambI: 0.45,
-        sunC: C(0xffffff), sunI: 1.2, sea: C(0xffffff), ground: C(0xffffff), leaves: [C(0x3fc23a), C(0x2fae36), C(0x5ad44a), C(0x2fb84a), C(0x46d25a), C(0x46c84a)],
+        top: C(0x2f8cff), horizon: C(0xbfe8ff), fog: C(0xc4eaff), hemiSky: C(0xeaf6ff), hemiGround: C(0x5c8a4a), hemiI: 1.1, ambI: 0.45,
+        sunC: C(0xfff3e0), sunI: 1.5, sea: C(0xffffff), ground: C(0xffffff), leaves: [C(0x3fc23a), C(0x2fae36), C(0x5ad44a), C(0x2fb84a), C(0x46d25a), C(0x46c84a)],
         snow: 0, rain: 0, fall: 0, motes: 1, grip: 1, fogNear: 380, fogFar: 1500,
     },
     rain: {
-        top: C(0x4d5a6c), horizon: C(0x9aa6b4), fog: C(0x8c98a6), hemiSky: C(0xc8d4e0), hemiGround: C(0x3c5a3a), hemiI: 1.05, ambI: 0.4,
-        sunC: C(0xc8d4ff), sunI: 0.4, sea: C(0x2a6a96), ground: C(0xc8d8c8), leaves: [C(0x2f9e36), C(0x248a2c), C(0x3fae40), C(0x249a3a), C(0x2fae44), C(0x2f9a3a)],
+        top: C(0x4d5a6c), horizon: C(0x9aa6b4), fog: C(0x8c98a6), hemiSky: C(0xc8d4e0), hemiGround: C(0x3c5a3a), hemiI: 0.8, ambI: 0.4,
+        sunC: C(0xc8d4ff), sunI: 0.5, sea: C(0x2a6a96), ground: C(0xc8d8c8), leaves: [C(0x2f9e36), C(0x248a2c), C(0x3fae40), C(0x249a3a), C(0x2fae44), C(0x2f9a3a)],
         snow: 0, rain: 1, fall: 0, motes: 0, grip: 0.8, fogNear: 160, fogFar: 900,
     },
     autumn: {
-        top: C(0x4f7ad8), horizon: C(0xffcf96), fog: C(0xffd9b4), hemiSky: C(0xfff0dc), hemiGround: C(0x8a6a3a), hemiI: 1.4, ambI: 0.45,
-        sunC: C(0xffc890), sunI: 1.15, sea: C(0x2a96d0), ground: C(0xffe2a0), leaves: [C(0xff8a1e), C(0xe8561a), C(0xffc414), C(0xd8461a), C(0xff9a2a), C(0xc8a83a)],
+        top: C(0x4f7ad8), horizon: C(0xffcf96), fog: C(0xffd9b4), hemiSky: C(0xfff0dc), hemiGround: C(0x8a6a3a), hemiI: 1.05, ambI: 0.45,
+        sunC: C(0xffc890), sunI: 1.45, sea: C(0x2a96d0), ground: C(0xffe2a0), leaves: [C(0xff8a1e), C(0xe8561a), C(0xffc414), C(0xd8461a), C(0xff9a2a), C(0xc8a83a)],
         snow: 0, rain: 0, fall: 1, motes: 0, grip: 1, fogNear: 320, fogFar: 1400,
     },
     winter: {
-        top: C(0x86aee0), horizon: C(0xeaf3ff), fog: C(0xeaf3ff), hemiSky: C(0xffffff), hemiGround: C(0xa8b8d0), hemiI: 1.45, ambI: 0.55,
-        sunC: C(0xdfe8ff), sunI: 0.9, sea: C(0x5aa8d8), ground: C(0xe8f0ff), leaves: [C(0xf4f8ff), C(0xdce8f6), C(0xffffff), C(0xe6eef8), C(0xf0f6ff), C(0xe8f0f8)],
+        top: C(0x86aee0), horizon: C(0xeaf3ff), fog: C(0xeaf3ff), hemiSky: C(0xffffff), hemiGround: C(0xa8b8d0), hemiI: 1.05, ambI: 0.55,
+        sunC: C(0xdfe8ff), sunI: 1.15, sea: C(0x5aa8d8), ground: C(0xe8f0ff), leaves: [C(0xf4f8ff), C(0xdce8f6), C(0xffffff), C(0xe6eef8), C(0xf0f6ff), C(0xe8f0f8)],
         snow: 1, rain: 0, fall: 0, motes: 0, grip: 0.16, fogNear: 220, fogFar: 1100,
     },
 };
@@ -166,6 +167,8 @@ let flash = 0, nextBolt = 8, thunderAt = -1;
 
 let lastSeason = -1;
 const leafMats = LEAF_BASE.map((h) => mat(h));
+// recoloured with the seasons: never baked into the merged world's vertex colours
+for (const m of leafMats) m.userData.noFold = true;
 export const weather = { grip: 1, season: 0, k: 0, left: 0 };
 
 export function updateWeather(dt, t, playerY) {

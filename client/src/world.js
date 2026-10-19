@@ -10,6 +10,7 @@ import {
     WORLD, MUCK, WALLS, FENCE_H, TIERS, STEP_UPG, BOOST_PADS, DOUBLE_STEP_PAD, TRAMPS, TRAMP_TOP, BOXES, BOX_SPOTS, SPOTS, PASSES, PRODUCTS,
     trampOpen, muckOpen, crunchRush, eventLeft, fmt, comma, clock, rngFrom, buxText, petDef,
 } from '../../shared/config.js';
+import { batchStatic, skinRig } from './batch.js';
 
 export const SPAWN = new V3(WORLD.spawn.x, WORLD.spawn.y, WORLD.spawn.z);
 export const MUCK_SPAWN = new V3(MUCK.x, 0.6, MUCK.zMin + 14);
@@ -201,6 +202,7 @@ function cloud(x, y, z, s) {
     }
     g.position.set(x, y, z);
     scene.add(g);
+    skinRig(g); // one mesh per cloud (it drifts as a whole)
     clouds.push({ g, sp: 0.6 + rng() * 0.8 });
 }
 function burger(x, z, s) {
@@ -220,6 +222,7 @@ function hotdog(x, z, s, rot) {
     const bun = new T.Mesh(new T.CapsuleGeometry(1.6 * s, 7 * s, 6, 12), mat(0xe8a050)); bun.rotation.z = Math.PI / 2; bun.position.y = 1.6 * s; bun.scale.set(1, 1, 1.3); bun.castShadow = true; g.add(bun);
     const dog = new T.Mesh(new T.CapsuleGeometry(1 * s, 8.4 * s, 6, 12), mat(0xc8401e)); dog.rotation.z = Math.PI / 2; dog.position.y = 2.7 * s; g.add(dog);
     const mus = new T.Mesh(new T.TorusGeometry(0.3 * s, 0.25 * s, 6, 12), mat(0xffd028)); mus.position.set(0, 3.7 * s, 0); mus.scale.set(12, 1, 1); g.add(mus);
+    skinRig(g);
 }
 function cornDog(x, z, s) {
     mesh(CYL, mat(0xf0d0a0), 0.25 * s, 6 * s, 0.25 * s, x, 3 * s, z);
@@ -229,6 +232,7 @@ function donut(x, y, z, s, rotY) {
     const g = new T.Group(); g.position.set(x, y, z); g.rotation.set(Math.PI / 2 - 0.25, rotY || 0, 0); scene.add(g);
     g.add(new T.Mesh(new T.TorusGeometry(3 * s, 1.5 * s, 12, 28), mat(0xe8a050)));
     const icing = new T.Mesh(new T.TorusGeometry(3 * s, 1.35 * s, 12, 28, Math.PI * 2), mat(0xff8fd0)); icing.position.z = -0.35 * s; icing.scale.z = 0.8; g.add(icing);
+    skinRig(g);
 }
 function cupcake(x, z, s) {
     mesh(new T.CylinderGeometry(2.4, 1.8, 3, 18), mat(0x46b8ff), s, s, s, x, 1.5 * s, z, true);
@@ -493,6 +497,7 @@ function npc(x, z, rotY, shirt, ghost) {
         part(1.6, 1.6, 1.6, 0, 5, 0, 0xf2d0a0);
         part(1.8, 0.6, 1.8, 0, 5.9, 0, 0x3a2618);
     }
+    skinRig(g);
     return g;
 }
 function booth(x, z, rotY, color, title, sub) {
@@ -513,6 +518,7 @@ function booth(x, z, rotY, color, title, sub) {
     const along = Math.abs(c) > 0.5;
     solids.push(aabb(cx, 1.6, cz, along ? 12 : 3, 3.2, along ? 3 : 12));
     solids.push(aabb(bx, 5, bz, along ? 12 : 1, 10, along ? 1 : 12));
+    skinRig(g);
     return g;
 }
 function buildShops() {
@@ -578,6 +584,7 @@ function leaderboard(kind, x, z, rotY) {
     const tex = texFrom(cv);
     const scr = new T.Mesh(new T.PlaneGeometry(11.4, 15.2), new T.MeshBasicMaterial({ map: tex, toneMapped: false }));
     scr.position.set(0, 14, 0.25); g.add(scr);
+    skinRig(g);
     solids.push(aabb(x, 3, z, 12, 6, 2));
     boards[kind] = { cv, tex, rows: [], kind };
 }
@@ -728,4 +735,6 @@ export function buildWorld() {
     for (const k of Object.keys(boards)) drawBoard(boards[k]);
     refreshWorld();
     void foodMaterial; void petDef; void buildPet; void camera; void NEON_BOOST;
+    // every box that never moves drawn together with the others that look the same
+    batchStatic(scene);
 }

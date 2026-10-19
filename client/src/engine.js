@@ -30,21 +30,21 @@ function resize() {
 addEventListener('resize', resize);
 resize();
 
-// Lit surfaces stay below 1.0 in the linear buffer so only HDR neon blooms;
-// toneMappingExposure (fx.js) brings the overall brightness back up.
-export const hemi = new T.HemisphereLight(0xeaf6ff, 0x5c8a4a, 1.5);
+// Lit like Bloxity's top games: sky / ground fill, a little ambient and the sun, no tone mapping
+export const hemi = new T.HemisphereLight(0xeaf6ff, 0x5c8a4a, 1.1);
 export const amb = new T.AmbientLight(0xffffff, 0.45);
 scene.add(hemi, amb);
-export const sun = new T.DirectionalLight(0xffffff, 1.2);
+export const sun = new T.DirectionalLight(0xfff3e0, 1.5);
 sun.castShadow = true;
 sun.shadow.mapSize.set(1024, 1024);
 Object.assign(sun.shadow.camera, { left: -60, right: 60, top: 60, bottom: -60, near: 1, far: 260 });
-sun.shadow.bias = -0.0015;
+sun.shadow.bias = -0.0008;
 scene.add(sun, sun.target);
 
 // ----- materials & textures -----
 export const UNIT = new T.BoxGeometry(1, 1, 1);
-export const NEON_BOOST = 1.3;
+// neon stays at its own colour (there is no bloom pass to feed)
+export const NEON_BOOST = 1;
 const matCache = new Map();
 export function mat(color, o) {
     o = o || {};
@@ -52,9 +52,9 @@ export function mat(color, o) {
     let m = matCache.get(key);
     if (!m) {
         m = o.neon ? new T.MeshBasicMaterial({ color }) : new T.MeshLambertMaterial({ color });
-        // Neon is HDR (brighter than 1) so the bloom pass picks it up
         if (o.neon) m.color.multiplyScalar(NEON_BOOST);
         if (o.opacity && o.opacity < 1) { m.transparent = true; m.opacity = o.opacity; m.depthWrite = false; }
+        m.userData.fold = true; // a shared colour: the world batcher may bake it into vertex colours
         matCache.set(key, m);
     }
     return m;
